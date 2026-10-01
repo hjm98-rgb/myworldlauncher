@@ -34,7 +34,8 @@ jobs:
           export RUNNER=0
           export SLIMMED=1
           echo "BOOTJDK=$BOOTJDK"
-          make -j$(sysctl -n hw.ncpu) dsym package PLATFORM=2
+          # 显式传入 BRANCH/COMMIT，绕过 git 查询（打包工程不含 .git，git 命令返回空导致 CONFIG 宏未定义报错）
+          make -j$(sysctl -n hw.ncpu) BRANCH=main COMMIT=release dsym package PLATFORM=2
 
       - name: 上传 IPA 产物
         uses: actions/upload-artifact@v4
