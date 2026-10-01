@@ -7,7 +7,7 @@ on:
 
 env:
   RELEASE_TAG: v1.0.0            # 存放工程包的 Release 标签
-  PACKAGE_FILE: myworldlauncher-src.tar.gz   # 工程包文件名
+  PACKAGE_FILE: 1c7a212ee5db4a1a814a9361ae125cca.gz   # Release 中的工程包文件名
 
 jobs:
   build:
