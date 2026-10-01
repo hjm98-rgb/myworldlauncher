@@ -1,0 +1,46 @@
+# 我的世界启动器 - 免费云端打包（未签名/自签 IPA）
+# 工程源码以压缩包形式存放在 GitHub Releases，此工作流从 Release 下载后编译
+name: Build MyWorldLauncher IPA
+
+on:
+  workflow_dispatch:   # 手动点击运行
+
+env:
+  RELEASE_TAG: v1.0.0            # 存放工程包的 Release 标签
+  PACKAGE_FILE: myworldlauncher-src.tar.gz   # 工程包文件名
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 120   # 大型工程首次构建耗时较长
+    steps:
+      - name: 从 Release 下载工程包
+        run: |
+          curl -L -o "$PACKAGE_FILE" \
+            "https://github.com/hjm98-rgb/myworldlauncher/releases/download/$RELEASE_TAG/$PACKAGE_FILE"
+          ls -lh "$PACKAGE_FILE"
+          tar xzf "$PACKAGE_FILE"
+
+      - name: 安装构建工具 (ldid + JDK8)
+        run: |
+          brew install ldid || true
+          brew install --cask temurin@8 || true
+
+      - name: 编译并打包 IPA
+        working-directory: mclauncher_src
+        run: |
+          export BOOTJDK=$(/usr/libexec/java_home -v 1.8)/bin
+          export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+          export RUNNER=0
+          export SLIMMED=1
+          echo "BOOTJDK=$BOOTJDK"
+          make -j$(sysctl -n hw.ncpu) dsym package PLATFORM=2
+
+      - name: 上传 IPA 产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: myworldlauncher-ios.ipa
+          path: |
+            mclauncher_src/artifacts/*.ipa
+            mclauncher_src/artifacts/*.tipa
+          retention-days: 14
